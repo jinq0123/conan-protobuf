@@ -8,6 +8,13 @@ if (MSVC)
   add_definitions(/MP)
 endif (MSVC)
 
-include_directories(${CMAKE_BINARY_DIR})
-add_executable(client client.cpp message.pb.cc)
-target_link_libraries(client ${CONAN_LIBS})
+find_package(Protobuf REQUIRED CONFIG) # CONFIG is important as otherwise it looks for FindProtobuf.cmake instead
+
+PROTOBUF_GENERATE_CPP(SRC_FILE HEADER_FILE message.proto)
+
+include_directories(${Protobuf_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR}) # CMAKE_CURRENT_BINARY_DIR is where our generated files are (.pb.hpp)
+add_executable(client client.cpp ${SRC_FILE} ${HEADER_FILE})
+if(NOT TARGET protobuf::libprotobuf)
+    message(FATAL_ERROR "WE DIDN'T FIND LIBPROTOBUFS IMPORT TARGET (Protobuf_LIBRARIES = ${Protobuf_LIBRARIES})")
+endif()
+target_link_libraries(client protobuf::libprotobuf)
