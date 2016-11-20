@@ -1,13 +1,7 @@
 from conan.packager import ConanMultiPackager
-import platform
+
 
 if __name__ == "__main__":
-    builder = ConanMultiPackager(username="sunside", channel="testing",
-                                 visual_versions=["12", "14"])
-    builder.add_common_builds(shared_option_name="Protobuf:shared")
-    filtered_builds = []
-    for settings, options in builder.builds:
-        if settings["arch"] == "x86_64":
-             filtered_builds.append([settings, options])
-    builder.builds = filtered_builds
+    builder = ConanMultiPackager(username="a_teammate", channel="testing")
+    builder.add_common_builds()
     builder.run()
