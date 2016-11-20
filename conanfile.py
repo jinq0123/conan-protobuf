@@ -43,13 +43,20 @@ conan_basic_setup()''')
                 args += ["-Dprotobuf_MSVC_STATIC_RUNTIME=OFF"]
         cmake = CMake(self.settings)
         self.run('cmake {}/cmake {} {}'.format(self.folder, cmake.command_line, ' '.join(args)))
+        self.output.warn("CMAKE OUTPUT: {}".format(cmake.command_line))
         self.run("cmake --build . {}".format(cmake.build_config))
 
     def package(self):
-        # Copy FindProtobuf.cmake to package
-        self.copy("*.cmake", dst=".", src="cmake/")
+        # Copy FindProtobuf.cmakes to package
+        cmake_files = ["protobuf-config.cmake", "protobuf-config-version.cmake", "protobuf-options.cmake", "protobuf-module.cmake", "protobuf-targets.cmake"]
+        for file in cmake_files:
+            self.copy(file, dst=".", src="cmake/")
+          # Copy the build_type specific file only for the right one:
+        self.copy("protobuf-targets-{}.cmake".format("debug" if self.settings.build_type == "Debug" else "release"), dst=".", src="cmake/")
+
         # Copy Headers to package include folder
         self.copy_headers("*.h", "{}/src".format(self.folder))
+
         # Copy all proto files:
         self.copy("*.proto", dst="bin", src="{}/src".format(self.folder))
 
