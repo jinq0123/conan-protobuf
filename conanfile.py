@@ -10,7 +10,6 @@ class ProtobufConan(ConanFile):
     license = "https://github.com/google/protobuf/blob/v{}/LICENSE".format(version)
     requires = "zlib/1.2.8@lasote/stable"
     settings = "os", "compiler", "build_type", "arch"
-    exports = "cmake*.cmake"
    # exports = "CMakeLists.txt", "lib*.cmake", "extract_includes.bat.in", "protoc.cmake", "tests.cmake", "change_dylib_names.sh"
     options = {"shared": [True, False]}
     default_options = "shared=False"
@@ -30,10 +29,10 @@ class ProtobufConan(ConanFile):
         tools.replace_in_file(cmake_file, "project(protobuf C CXX)", '''project(protobuf C CXX)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()''')
-        tools.replace_in_file(cmake_file, "include(install.cmake)", "# include(install.cmake) # commented by conan: we install manually")
 
     def build(self):
         args = ["-Dprotobuf_BUILD_TESTS=OFF", "-Dprotobuf_BUILD_EXAMPLES=OFF"]
+        args += ["-DCMAKE_INSTALL_PREFIX={}/install".format(os.getcwd())] # We do install, since we need some cmake files
         args += ["-DBUILD_SHARED_LIBS={}".format('ON' if self.options.shared else 'OFF')]
         args += ["-Dprotobuf_WITH_ZLIB=ON"]
         if self.settings.compiler == "Visual Studio":
@@ -44,22 +43,36 @@ conan_basic_setup()''')
         cmake = CMake(self.settings)
         self.run('cmake {}/cmake {} {}'.format(self.folder, cmake.command_line, ' '.join(args)))
         self.output.warn("CMAKE OUTPUT: {}".format(cmake.command_line))
-        self.run("cmake --build . {}".format(cmake.build_config))
+        self.run("cmake --build . {} --target install".format(cmake.build_config))
 
     def package(self):
+        # Install FindProtobuf files:
+        # Fix some hard paths first:
+        tools.replace_in_file("install/cmake/protobuf-targets.cmake", '''set_target_properties(protobuf::libprotobuf PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
+  INTERFACE_LINK_LIBRARIES''', '''set_target_properties(protobuf::libprotobuf PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
+  INTERFACE_LINK_LIBRARIES "${CONAN_LIB_DIRS_ZLIB}/${CONAN_LIBS_ZLIB}"
+  # INTERFACE_LINK_LIBRARIES''') # hard path to zlib.
+        tools.replace_in_file("install/cmake/protobuf-targets.cmake", 'get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)', '''get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+  set(_IMPORT_PREFIX "${CONAN_PROTOBUF_ROOT}")''') # search everything in the conan folder, not the install folder.
+        tools.replace_in_file("install/cmake/protobuf-options.cmake", 'option(protobuf_MODULE_COMPATIBLE "CMake build-in FindProtobuf.cmake module compatible" OFF)',
+        'option(protobuf_MODULE_COMPATIBLE "CMake build-in FindProtobuf.cmake module compatible" ON)') # We want to override the FindProtobuf.cmake shipped within CMake
+        
         # Copy FindProtobuf.cmakes to package
         cmake_files = ["protobuf-config.cmake", "protobuf-config-version.cmake", "protobuf-options.cmake", "protobuf-module.cmake", "protobuf-targets.cmake"]
         for file in cmake_files:
-            self.copy(file, dst=".", src="cmake/")
+            self.copy(file, dst=".", src="install/cmake/")
           # Copy the build_type specific file only for the right one:
-        self.copy("protobuf-targets-{}.cmake".format("debug" if self.settings.build_type == "Debug" else "release"), dst=".", src="cmake/")
+        self.copy("protobuf-targets-{}.cmake".format("debug" if self.settings.build_type == "Debug" else "release"), dst=".", src="install/cmake/")
 
         # Copy Headers to package include folder
-        self.copy_headers("*.h", "{}/src".format(self.folder))
+        self.copy("*.h", dst="include", src="install/include")
 
         # Copy all proto files:
         self.copy("*.proto", dst="bin", src="{}/src".format(self.folder))
 
+        # TODO: we should just use the stuff from the install folder directly.
         if self.settings.os == "Windows":
             self.copy("*.lib", dst="lib", src="lib", keep_path=False)
             self.copy("protoc.exe", dst="bin", src="bin", keep_path=False)
