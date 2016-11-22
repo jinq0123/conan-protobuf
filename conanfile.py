@@ -55,7 +55,7 @@ conan_basic_setup()''')
   INTERFACE_LINK_LIBRARIES''', '''find_package(ZLIB)
   set_target_properties(protobuf::libprotobuf PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "ZLIB::ZLIB"
+  INTERFACE_LINK_LIBRARIES "${ZLIB_LIBRARY}"
   # INTERFACE_LINK_LIBRARIES''') # hard path to zlib.
         tools.replace_in_file("install/cmake/protobuf-targets.cmake", 'get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)', '''get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
   set(_IMPORT_PREFIX "${CONAN_PROTOBUF_ROOT}")''') # search everything in the conan folder, not the install folder.
