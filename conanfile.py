@@ -25,10 +25,12 @@ class ProtobufConan(ConanFile):
                        "protobuf.zip")
         tools.unzip("protobuf.zip")
         os.unlink("protobuf.zip")
-        cmake_file = "{}/cmake/CMakeLists.txt".format(self.folder)
-        tools.replace_in_file(cmake_file, "project(protobuf C CXX)", '''project(protobuf C CXX)
+        tools.replace_in_file("{}/cmake/CMakeLists.txt".format(self.folder), "project(protobuf C CXX)", '''project(protobuf C CXX)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()''')
+        tools.replace_in_file("{}/cmake/install.cmake".format(self.folder),
+                              'set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/protobuf" CACHE STRING "${_cmakedir_desc}")',
+                              'set(CMAKE_INSTALL_CMAKEDIR "cmake" CACHE STRING "${_cmakedir_desc}")') # Install to the same folder for all compilers.
 
     def build(self):
         args = ["-Dprotobuf_BUILD_TESTS=OFF", "-Dprotobuf_BUILD_EXAMPLES=OFF"]
