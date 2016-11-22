@@ -6,7 +6,7 @@ import shutil
 class ProtobufConan(ConanFile):
     name = "Protobuf"
     version = "3.1.0"
-    url = "https://github.com/inexor-game/conan-protobuf.git"
+    url = "https://github.com/a_teammate/conan-protobuf.git"
     license = "https://github.com/google/protobuf/blob/v{}/LICENSE".format(version)
     requires = "zlib/1.2.8@lasote/stable"
     settings = "os", "compiler", "build_type", "arch"
