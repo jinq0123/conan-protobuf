@@ -1,7 +1,8 @@
 from conans import ConanFile, CMake, tools, ConfigureEnvironment
+from conans.util.files import load, save
 import os
+import re
 import shutil
-
 
 class ProtobufConan(ConanFile):
     name = "Protobuf"
@@ -15,6 +16,13 @@ class ProtobufConan(ConanFile):
     default_options = "shared=False"
     generators = "cmake"
     folder = "protobuf-{}".format(version)
+
+    def replace_in_file_regex(self, file_path, regex, replace):
+        content = load(file_path)
+        content = content.encode("utf-8")
+        content = re.sub(regex, replace, content)
+        with open(file_path, "wb") as handle:
+            handle.write(content)
 
     def config(self):
         self.options["zlib"].shared = self.options.shared
@@ -50,13 +58,10 @@ conan_basic_setup()''')
     def package(self):
         # Install FindProtobuf files:
         # Fix some hard paths first:
-        tools.replace_in_file("install/cmake/protobuf-targets.cmake", '''set_target_properties(protobuf::libprotobuf PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES''', '''find_package(ZLIB)
-  set_target_properties(protobuf::libprotobuf PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "${ZLIB_LIBRARY}"
-  # INTERFACE_LINK_LIBRARIES''') # hard path to zlib.
+        self.replace_in_file_regex("install/cmake/protobuf-targets.cmake", 'INTERFACE_LINK_LIBRARIES ".+zlib.+"', 'INTERFACE_LINK_LIBRARIES "${ZLIB_LIBRARY}"')
+        tools.replace_in_file("install/cmake/protobuf-targets.cmake", '''set_target_properties(protobuf::libprotobuf PROPERTIES''', '''find_package(ZLIB)
+set_target_properties(protobuf::libprotobuf PROPERTIES''') # hard path to zlib.
+
         tools.replace_in_file("install/cmake/protobuf-targets.cmake", 'get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)', '''get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
   set(_IMPORT_PREFIX "${CONAN_PROTOBUF_ROOT}")''') # search everything in the conan folder, not the install folder.
         tools.replace_in_file("install/cmake/protobuf-options.cmake", 'option(protobuf_MODULE_COMPATIBLE "CMake build-in FindProtobuf.cmake module compatible" OFF)',
