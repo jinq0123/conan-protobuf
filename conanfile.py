@@ -20,7 +20,7 @@ class ProtobufConan(ConanFile):
     def replace_in_file_regex(self, file_path, regex, replace):
         content = load(file_path)
         content = content.encode("utf-8")
-        content = re.sub(regex, replace, content)
+        content = re.sub(regex.encode("utf-8"), replace, content)
         with open(file_path, "wb") as handle:
             handle.write(content)
 
