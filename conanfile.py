@@ -90,10 +90,10 @@ set_target_properties(protobuf::libprotobuf PROPERTIES''') # hard path to zlib.
         else:
             # Copy the libs to lib
             if not self.options.shared:
-                self.copy("*.a", "lib", "", keep_path=False)
+                self.copy("*.a", "", "install", keep_path=True)
             else:
-                self.copy("*.so*", "lib", "", keep_path=False)
-                self.copy("*.9.dylib", "lib", "", keep_path=False)
+                self.copy("*.so*", "", "install", keep_path=True)
+                self.copy("*.9.dylib", "", "install", keep_path=True)
 
             # Copy the exe to bin
             # we need some sort of dynlib converter for macosx here, see memshardeds protobuf
