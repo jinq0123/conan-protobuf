@@ -9,7 +9,7 @@ class ProtobufConan(ConanFile):
     version = "3.1.0"
     url = "https://github.com/a_teammate/conan-protobuf.git"
     license = "https://github.com/google/protobuf/blob/v{}/LICENSE".format(version)
-    requires = "zlib/1.2.8@lasote/stable"
+    requires = "zlib/1.2.11@lasote/stable"
     settings = "os", "compiler", "build_type", "arch"
    # exports = "CMakeLists.txt", "lib*.cmake", "extract_includes.bat.in", "protoc.cmake", "tests.cmake", "change_dylib_names.sh"
     options = {"shared": [True, False]}
@@ -18,11 +18,11 @@ class ProtobufConan(ConanFile):
     folder = "protobuf-{}".format(version)
 
     def replace_in_file_regex(self, file_path, regex, replace):
-        content = load(file_path)
-        content = content.encode("utf-8")
-        content = re.sub(regex.encode("utf-8"), replace, content)
-        with open(file_path, "wb") as handle:
+        with open(file_path, "tr+") as handle:
+            content = handle.read()
+            content = re.sub(regex, replace, content)
             handle.write(content)
+            handle.close()
 
     def config(self):
         self.options["zlib"].shared = self.options.shared
@@ -66,7 +66,7 @@ set_target_properties(protobuf::libprotobuf PROPERTIES''') # hard path to zlib.
   set(_IMPORT_PREFIX "${CONAN_PROTOBUF_ROOT}")''') # search everything in the conan folder, not the install folder.
         tools.replace_in_file("install/cmake/protobuf-options.cmake", 'option(protobuf_MODULE_COMPATIBLE "CMake build-in FindProtobuf.cmake module compatible" OFF)',
         'option(protobuf_MODULE_COMPATIBLE "CMake build-in FindProtobuf.cmake module compatible" ON)') # We want to override the FindProtobuf.cmake shipped within CMake
-        
+
         # Copy FindProtobuf.cmakes to package
         cmake_files = ["protobuf-config.cmake", "protobuf-config-version.cmake", "protobuf-options.cmake", "protobuf-module.cmake", "protobuf-targets.cmake"]
         for file in cmake_files:
