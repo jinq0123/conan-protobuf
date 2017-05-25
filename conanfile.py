@@ -18,7 +18,7 @@ class ProtobufConan(ConanFile):
     folder = "protobuf-{}".format(version)
 
     def replace_in_file_regex(self, file_path, regex, replace):
-        with open(file_path, "tr+") as handle:
+        with open(file_path, "r+t") as handle:
             content = handle.read()
             content = re.sub(regex, replace, content)
             handle.write(content)
