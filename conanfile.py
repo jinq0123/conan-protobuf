@@ -21,6 +21,7 @@ class ProtobufConan(ConanFile):
         with open(file_path, "r+t") as handle:
             content = handle.read()
             content = re.sub(regex, replace, content)
+            #handle.seek(0)
             handle.write(content)
             handle.close()
 
@@ -73,6 +74,10 @@ set_target_properties(protobuf::libprotobuf PROPERTIES''') # hard path to zlib.
             self.copy(file, dst=".", src="install/cmake/")
           # Copy the build_type specific file only for the right one:
         self.copy("protobuf-targets-{}.cmake".format("debug" if self.settings.build_type == "Debug" else "release"), dst=".", src="install/cmake/")
+
+        #with open("install/cmake/protobuf-config.cmake", "r+t") as handle:
+            #self.output.warn( handle.read()  )
+            #handle.close()
 
         # Copy Headers to package include folder
         self.copy("*.h", dst="include", src="install/include")
