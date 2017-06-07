@@ -117,6 +117,8 @@ set_target_properties(protobuf::libprotobuf PROPERTIES''') # hard path to zlib.
 
     def package_info(self):
         basename = "libprotobuf"
+        self.cpp_info.libdirs = ["lib", "lib64"]
+
         if self.settings.build_type == "Debug":
             basename = "libprotobufd"
 
