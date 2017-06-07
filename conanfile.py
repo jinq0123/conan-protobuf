@@ -98,6 +98,7 @@ set_target_properties(protobuf::libprotobuf PROPERTIES''') # hard path to zlib.
         # TODO: we should just use the stuff from the install folder directly.
         if self.settings.os == "Windows":
             self.copy("*.lib", dst="lib", src="lib", keep_path=False)
+            self.copy("*.pdb", dst="lib", src="lib", keep_path=False)
             self.copy("protoc.exe", dst="bin", src="bin", keep_path=False)
 
             if self.options.shared:
