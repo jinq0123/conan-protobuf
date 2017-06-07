@@ -1,6 +1,7 @@
 from conans import ConanFile, CMake, tools, ConfigureEnvironment
 from conans.util.files import load, save
 import os
+import sys
 import re
 import shutil
 
@@ -18,12 +19,21 @@ class ProtobufConan(ConanFile):
     folder = "protobuf-{}".format(version)
 
     def replace_in_file_regex(self, file_path, regex, replace):
-        with open(file_path, "r+t") as handle:
-            content = handle.read()
-            content = re.sub(regex, replace, content)
-            #handle.seek(0)
-            handle.write(content)
-            handle.close()
+        # TODO: FIXME: Dear Future-ourselves, forgive us. We had good intentions.
+        if sys.version_info[0] > 2:
+            # py3k
+            with open(file_path, "r+t") as handle:
+                content = handle.read()
+                content = re.sub(regex, replace, content)
+                handle.write(content)
+                handle.close()
+        else: # python 2.x
+            content = load(file_path)
+            content = content.encode("utf-8")
+            content = re.sub(regex.encode("utf-8"), replace, content)
+            with open(file_path, "wb") as handle:
+                handle.write(content)
+                handle.close()
 
     def config(self):
         self.options["zlib"].shared = self.options.shared
