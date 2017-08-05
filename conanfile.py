@@ -116,17 +116,17 @@ set_target_properties(protobuf::libprotobuf PROPERTIES''') # hard path to zlib.
             self.copy("protoc", "bin", "bin", keep_path=False)
 
     def package_info(self):
-        basename = "libprotobuf"
+        basenames = ["libprotobuf-lite", "libprotoc", "libprotobuf"]
         self.cpp_info.libdirs = ["lib", "lib64"]
 
         if self.settings.build_type == "Debug":
-            basename = "libprotobufd"
+            basenames = [s + "d" for s in basenames]
 
         if self.settings.os == "Windows":
-            self.cpp_info.libs = [basename]
+            self.cpp_info.libs = basenames
             if self.options.shared:
                 self.cpp_info.defines = ["PROTOBUF_USE_DLLS"]
         elif self.settings.os == "Macos":
-            self.cpp_info.libs = [basename + ".a"] if not self.options.shared else [basename + ".9.dylib"]
+            self.cpp_info.libs = [s + ".a" for s in basenames] if not self.options.shared else [s + ".9.dylib" for s in basenames]
         else:
-            self.cpp_info.libs = [basename + ".a"] if not self.options.shared else [basename + ".so.9"]
+            self.cpp_info.libs = [s + ".a" for s in basenames] if not self.options.shared else [s + ".so.9" for s in basenames]

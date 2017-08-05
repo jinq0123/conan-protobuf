@@ -1,5 +1,8 @@
 #include <iostream>
 #include <string>
+
+#include <google/protobuf/compiler/code_generator.h>  // for ParseGeneratorParameter()
+
 #include "message.pb.h"
 
 using namespace std;
@@ -25,5 +28,6 @@ int main() {
 
   cout<<address_book2.DebugString();
 
+  google::protobuf::compiler::ParseGeneratorParameter("", 0);  
   return 0;
 }
