@@ -92,9 +92,9 @@ set_target_properties(protobuf::libprotobuf PROPERTIES''') # hard path to zlib.
  '''set(_generated_srcs)
     foreach(_ext ${protobuf_GENERATE_EXTENSIONS})''')
         tools.replace_in_file(config_file, 
-            '''    add_custom_command(",''',
+            '''    add_custom_command(''',
             '''    list(APPEND _generated_srcs_all ${_generated_srcs})
-    add_custom_command(",''')
+    add_custom_command(''')
         tools.replace_in_file(config_file, 
             "ARGS --${protobuf_generate_LANGUAGE}_out  ${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${_abs_file}",
             "ARGS --${protobuf_generate_LANGUAGE}_out ${_dll_export_decl}${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${_abs_file}")
