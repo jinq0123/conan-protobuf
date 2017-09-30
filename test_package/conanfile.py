@@ -1,12 +1,12 @@
 from conans import ConanFile, CMake
 import os
 
-channel = os.getenv("CONAN_CHANNEL", "stable")
-username = os.getenv("CONAN_USERNAME", "inexorgame")
+channel = os.getenv("CONAN_CHANNEL", "testing")
+username = os.getenv("CONAN_USERNAME", "jinq0123")
 
 class ProtobufTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    requires = "Protobuf/3.1.0@{}/{}".format(username, channel)
+    requires = "Protobuf/3.4.1@{}/{}".format(username, channel)
     generators = "cmake"
 
     def build(self):

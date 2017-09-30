@@ -7,7 +7,7 @@ import shutil
 
 class ProtobufConan(ConanFile):
     name = "Protobuf"
-    version = "3.1.0"
+    version = "3.4.1"
     url = "https://github.com/a_teammate/conan-protobuf.git"
     license = "https://github.com/google/protobuf/blob/v{}/LICENSE".format(version)
     requires = "zlib/1.2.11@lasote/stable"
@@ -78,6 +78,36 @@ set_target_properties(protobuf::libprotobuf PROPERTIES''') # hard path to zlib.
         tools.replace_in_file("install/cmake/protobuf-options.cmake", 'option(protobuf_MODULE_COMPATIBLE "CMake build-in FindProtobuf.cmake module compatible" OFF)',
         'option(protobuf_MODULE_COMPATIBLE "CMake build-in FindProtobuf.cmake module compatible" ON)') # We want to override the FindProtobuf.cmake shipped within CMake
 
+        # Fix bug in v3.4.1. Merge from master.
+        config_file = "install/cmake/protobuf-config.cmake"
+        tools.replace_in_file(config_file,
+            'cmake_parse_arguments(protobuf_generate "APPEND_PATH" "${_singleargs}" "PROTOS IMPORT_DIRS GENERATE_EXTENSIONS" "${ARGN}")',
+            'cmake_parse_arguments(protobuf_generate "APPEND_PATH" "${_singleargs}" "PROTOS;IMPORT_DIRS;GENERATE_EXTENSIONS" "${ARGN}")')
+        tools.replace_in_file(config_file,
+            "if(protobuf_generate_PROTOS AND NOT protobuf_generate_TARGET)",
+            "if(NOT protobuf_generate_PROTOS AND NOT protobuf_generate_TARGET)")
+        tools.replace_in_file(config_file, "set(_generated_srcs)", "set(_generated_srcs_all)")
+        tools.replace_in_file(config_file, 
+            "foreach(_ext ${_output_extensions})",
+ '''set(_generated_srcs)
+    foreach(_ext ${protobuf_GENERATE_EXTENSIONS})''')
+        tools.replace_in_file(config_file, 
+            '''    add_custom_command(",''',
+            '''    list(APPEND _generated_srcs_all ${_generated_srcs})
+    add_custom_command(",''')
+        tools.replace_in_file(config_file, 
+            "ARGS --${protobuf_generate_LANGUAGE}_out  ${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${_abs_file}",
+            "ARGS --${protobuf_generate_LANGUAGE}_out ${_dll_export_decl}${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${_abs_file}")
+        tools.replace_in_file(config_file, 
+            "set_source_files_properties(${_generated_srcs} PROPERTIES GENERATED TRUE)",
+            "set_source_files_properties(${_generated_srcs_all} PROPERTIES GENERATED TRUE)")
+        tools.replace_in_file(config_file, 
+            "set(${protobuf_generate_OUT_VAR} ${_generated_srcs} PARENT_SCOPE)",
+            "set(${protobuf_generate_OUT_VAR} ${_generated_srcs_all} PARENT_SCOPE)")
+        tools.replace_in_file(config_file, 
+            "target_sources(${protobuf_generate_TARGET} PUBLIC ${_generated_srcs})",
+            "target_sources(${protobuf_generate_TARGET} PUBLIC ${_generated_srcs_all})")
+        
         # Copy FindProtobuf.cmakes to package
         cmake_files = ["protobuf-config.cmake", "protobuf-config-version.cmake", "protobuf-options.cmake", "protobuf-module.cmake", "protobuf-targets.cmake"]
         for file in cmake_files:
