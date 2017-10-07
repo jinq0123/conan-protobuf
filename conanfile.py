@@ -8,9 +8,9 @@ import shutil
 class ProtobufConan(ConanFile):
     name = "Protobuf"
     version = "3.1.0"
-    url = "https://github.com/a_teammate/conan-protobuf.git"
+    url = "https://github.com/inexorgame/conan-protobuf.git"
     license = "https://github.com/google/protobuf/blob/v{}/LICENSE".format(version)
-    requires = "zlib/1.2.11@lasote/stable"
+    requires = "zlib/1.2.11@conan/stable"
     settings = "os", "compiler", "build_type", "arch"
    # exports = "CMakeLists.txt", "lib*.cmake", "extract_includes.bat.in", "protoc.cmake", "tests.cmake", "change_dylib_names.sh"
     options = {"shared": [True, False]}
