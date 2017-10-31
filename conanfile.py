@@ -45,6 +45,7 @@ class ProtobufConan(ConanFile):
         tools.unzip("protobuf.zip")
         os.unlink("protobuf.zip")
         tools.replace_in_file("{}/cmake/CMakeLists.txt".format(self.folder), "project(protobuf C CXX)", '''project(protobuf C CXX)
+add_compile_options(-fPIC)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()''')
         tools.replace_in_file("{}/cmake/install.cmake".format(self.folder),
