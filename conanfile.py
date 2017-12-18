@@ -1,16 +1,15 @@
-from conans import ConanFile, CMake, tools, ConfigureEnvironment
+from conans import ConanFile, CMake, tools
 from conans.util.files import load, save
 import os
 import sys
 import re
-import shutil
 
 class ProtobufConan(ConanFile):
     name = "Protobuf"
     version = "3.4.1"
-    url = "https://github.com/a_teammate/conan-protobuf.git"
+    url = "https://github.com/inexorgame/conan-protobuf.git"
     license = "https://github.com/google/protobuf/blob/v{}/LICENSE".format(version)
-    requires = "zlib/1.2.11@lasote/stable"
+    requires = "zlib/1.2.11@conan/stable"
     settings = "os", "compiler", "build_type", "arch"
    # exports = "CMakeLists.txt", "lib*.cmake", "extract_includes.bat.in", "protoc.cmake", "tests.cmake", "change_dylib_names.sh"
     options = {"shared": [True, False]}
@@ -62,7 +61,7 @@ conan_basic_setup()''')
                 args += ["-Dprotobuf_MSVC_STATIC_RUNTIME=ON"]
             else:
                 args += ["-Dprotobuf_MSVC_STATIC_RUNTIME=OFF"]
-        cmake = CMake(self.settings)
+        cmake = CMake(self)
         self.run('cmake {}/cmake {} {}'.format(self.folder, cmake.command_line, ' '.join(args)))
         self.output.warn("CMAKE OUTPUT: {}".format(cmake.command_line))
         self.run("cmake --build . {} --target install".format(cmake.build_config))
@@ -116,9 +115,9 @@ set_target_properties(protobuf::libprotobuf PROPERTIES''') # hard path to zlib.
           # Copy the build_type specific file only for the right one:
         self.copy("protobuf-targets-{}.cmake".format("debug" if self.settings.build_type == "Debug" else "release"), dst=".", src="install/cmake/")
 
-        #with open("install/cmake/protobuf-config.cmake", "r+t") as handle:
-            #self.output.warn( handle.read()  )
-            #handle.close()
+        # with open("install/cmake/protobuf-config.cmake", "r+t") as handle:
+            # self.output.warn( handle.read()  )
+            # handle.close()
 
         # Copy Headers to package include folder
         self.copy("*.h", dst="include", src="install/include")
